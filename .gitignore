@@ -1,3 +1,3 @@
 filepaths.py
-input.xlsx
-stored.xlsx
+*.xlsx
+__pycache__/
