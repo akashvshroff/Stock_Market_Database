@@ -6,11 +6,12 @@ import pandas as pd
 from filepaths import *
 import requests
 import win32com.client
-from datetime import date
+from datetime import date, timedelta
+import os
 
 
-class StoreData()
-   def __init__(self):
+class StoreData:
+    def __init__(self):
         """
         Initialises the various dataframes, stylistic variables and data
         structures for the program! Accepts the parameters that are to be
@@ -28,15 +29,16 @@ class StoreData()
                              bottom=Side(border_style='thin', color='000000'))
         self.ft = Font(color='FFFFFF', bold=True, name='Times New Roman')
         self.allign_style = 'center'
-        self.parameters = ['CLOSE_PRICE', 'DELIV_PER']
+        self.parameters = ['DELIV_PER']
         self.start_row = 1
-        self.stored_names, self.input_data, self.input_names, self.cell_range, self.url = [], [], [], '', ''
+        self.stored_names, self.input_data, self.input_names,  self.url = [], [], [], '',
         self.cells_ref = ['' for i in range(len(self.parameters))]
         self.get_file()
         wb = load_workbook(stored_path)
         self.ws = wb.active
         self.date_column()
         self.enter_data()
+        wb.save(stored_path)
         os.remove(self.file_path)
 
     def get_file(self):
@@ -59,11 +61,11 @@ class StoreData()
         """
         raw_input_df = pd.read_csv(self.file_path, sep=r'\s*,\s*', engine='python')
         input_df = raw_input_df[raw_input_df["SERIES"] == 'EQ']
-        self.input_names = input_df['SYMBOL']
+        self.input_names = input_df['SYMBOL'].values.tolist()
         self.input_data = input_df[self.parameters]
+        self.input_data.reset_index(inplace=True, drop=True)
         stored_data = pd.read_excel(stored_path)
         self.stored_names = stored_data['STOCKS']
-
 
     def date_column(self):
         """
@@ -72,17 +74,15 @@ class StoreData()
         depending on the lenght of the parameters.
         """
         rows = self.ws.iter_rows(min_row=self.start_row,
-                            max_row=self.start_row)  # the row where your headings are
+                                 max_row=self.start_row)  # the row where your headings are
         row = next(rows)
         headings = [c.value for c in row]
         col_letter = ''
         for col, heading in enumerate(headings):
-            if not col:
-                continue  # skip the first col
             if heading == self.d1 or heading is None:
                 for i in range(len(self.parameters)):
                     self.cells_ref[i] = get_column_letter(col+i+1)
-        if not self.cells_ref:
+        if not all(self.cells_ref):
             for i in range(len(self.parameters)):
                 self.cells_ref[i] = get_column_letter(len(headings)+i+1)
         self.enter_initial()
@@ -91,22 +91,23 @@ class StoreData()
         """
         Enters the date, as well as the parameters list into the sheet.
         """
-        start_cell,end_cell = f'{self.cells_ref[0]}{self.start_row}',f'{self.cells_ref[-1]}{self.start_row}'
-        merge = '{}:{}'.format(start_cell,end_cell)
+        start_cell, end_cell = f'{self.cells_ref[0]}{self.start_row}', f'{self.cells_ref[-1]}{self.start_row}'
+        merge = '{}:{}'.format(start_cell, end_cell)
         self.ws.merge_cells(merge)
         self.ws[start_cell] = self.d1
-        cell.border = self.border
-        cell.alignment = Alignment(horizontal=self.allign_style, vertical=self.allign_style)
+        self.ws[start_cell].border = self.border
+        self.ws[start_cell].alignment = Alignment(
+            horizontal=self.allign_style, vertical=self.allign_style)
         curr_row = self.start_row + 1
-        for i,para in enumerate(self.parameters):
+        for i, para in enumerate(self.parameters):
             curr_cell = f'{self.cells_ref[i]}{curr_row}'
             self.ws[curr_cell] = para
 
-    def stylise_cells(self):
+    def stylise_cells(self, cell_range):
         """
         Stylises cells within a range with the border, allignment etc.
         """
-        rows = self.ws[self.cell_range]
+        rows = self.ws[cell_range]
         for row in rows:
             for cell in row:
                 cell.border = self.border
@@ -119,21 +120,60 @@ class StoreData()
         stored and those that are new are apended to the end of the STOCKS list
         on the first column.
         """
+        num_stored = len(self.stored_names)
+        num_added = len(set(self.input_names+self.stored_names))
         curr_row = self.start_row + 2
+        rem_names = self.input_names[::]
         for stock in self.stored_names:
-            if stock in self.input_names: #there is data for it
+            # print(curr_row)
+            # print(stock)
+            if stock in self.input_names:  # there is data for it
                 stock_index = self.input_names.index(stock)
-                for num,parameter in enumerate(self.parameters):
-                    curr_cell = '{}{}'.format(self.cells_ref[i],self.curr_row)
-                    value = self.input_data[parameter][stock_index]
+                # print(stock_index)
+                for num, parameter in enumerate(self.parameters):
+                    # print(num, parameter)
+                    curr_cell = '{}{}'.format(self.cells_ref[num], curr_row)
+                    value = self.input_data.at[stock_index, parameter]
                     self.ws[curr_cell] = value
-                self.input_names.pop(stock_index)
+                rem_names.remove(stock)
+                self.input_data.drop([stock_index], inplace=True)
+                # print(self.input_names)
+                # print(self.input_data.head())
+            else:
+                for num, parameter in enumerate(self.parameters):
+                    curr_cell = '{}{}'.format(self.cells_ref[num], curr_row)
+                    self.ws[curr_cell] = '-'
+            curr_row += 1
+        cell_range = '{}{}:{}{}'.format(
+            self.cells_ref[0], self.start_row+1, self.cells_ref[-1], self.start_row+num_stored+1)
+        self.stylise_cells(cell_range)
 
-
-
+        if rem_names:
+            # now it is only the cells that haven't been added before
+            start_row = 3 + num_stored
+            curr_row = start_row
+            for name in rem_names:
+                curr_cell = f'A{curr_row}'
+                self.ws[curr_cell] = name
+                stock_index = rem_names.index(name)
+                for num, parameter in enumerate(self.parameters):
+                    curr_cell = '{}{}'.format(self.cells_ref[i], curr_row)
+                    value = self.input_data.at[stock_index, parameter]
+                    self.ws[curr_cell] = value
+                curr_row += 1
+            cell_range = f'A{1}:A{curr_row}'
+            self.stylise_cells(cell_range)
 
     def arrange_rows(self):
         """
         Sorts all the names within the different rows.
         """
         pass
+
+
+def main():
+    obj = StoreData()
+
+
+if __name__ == '__main__':
+    main()
