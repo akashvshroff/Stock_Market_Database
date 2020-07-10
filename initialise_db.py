@@ -28,6 +28,12 @@ class InitialiseDb:
         self.stylise_cells()
         wb.save(stored_path)
 
+    def get_file(self):
+        """
+        Scrapes the web and retrieves the first input file.
+        """
+        pass
+
     def store_names(self):
         """
         Adds names of initial stocks to the excel sheet.
