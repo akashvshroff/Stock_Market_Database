@@ -4,6 +4,7 @@ from openpyxl.styles.colors import Color
 from openpyxl.utils import get_column_letter
 import pandas as pd
 from filepaths import *
+import requests
 
 
 class InitialiseDb:
