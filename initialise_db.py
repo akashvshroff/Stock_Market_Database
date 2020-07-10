@@ -4,6 +4,8 @@ from openpyxl.styles.colors import Color
 from openpyxl.utils import get_column_letter
 import pandas as pd
 from filepaths import *
+from datetime import date, timedelta
+import os
 import requests
 
 
@@ -13,8 +15,12 @@ class InitialiseDb:
         Gets the names of the input stocks, initialise formatting and other
         structures.
         """
-        self.input_df = pd.read_excel(input_path)
-        self.input_names = self.input_df['Stocks']
+        date_today = date.today() - timedelta(days=1)
+        self.url_date = date_today.strftime("%d%m%Y")
+        self.base_url = 'https://archives.nseindia.com/products/content/'
+        self.input_names = []
+        self.get_file()
+        self.get_info()
         wb = Workbook()
         self.ws = wb.active
         self.border = Border(left=Side(border_style='thin', color='000000'),
@@ -23,23 +29,39 @@ class InitialiseDb:
                              bottom=Side(border_style='thin', color='000000'))
         self.ft = Font(color='FFFFFF', bold=True, name='Times New Roman')
         self.allign_style = 'center'
-        self.cell_range = 'A1:A{}'.format(1+len(self.input_names))
-        self.ws['A1'] = 'Stocks'
+        self.cell_range = 'A1:A{}'.format(2+len(self.input_names))
+        self.ws.merge_cells('A1:A2')
+        self.ws['A1'] = 'STOCKS'
         self.store_names()
         self.stylise_cells()
         wb.save(stored_path)
+        os.remove(self.file_path)
 
     def get_file(self):
         """
-        Scrapes the web and retrieves the first input file.
+        Gets the url for the csv file.
         """
-        pass
+        self.url = self.base_url + 'sec_bhavdata_full_{}.csv'.format(self.url_date)
+        # print(self.url)
+        values = requests.get(self.url)
+        self.file_path = 'sec_bhavdata_full_{}.csv'.format(self.url_date)
+        fhand = open(self.file_path, 'wb')
+        fhand.write(values.content)
+        fhand.close()
+
+    def get_info(self):
+        """
+        Filters out the shares to only give those with EQ parameter
+        """
+        raw_input_df = pd.read_csv(self.file_path, sep=r'\s*,\s*', engine='python')
+        input_df = raw_input_df[raw_input_df["SERIES"] == 'EQ']
+        self.input_names = input_df['SYMBOL']
 
     def store_names(self):
         """
         Adds names of initial stocks to the excel sheet.
         """
-        st_row, st_col = 2, 'A'
+        st_row, st_col = 3, 'A'
         for name in self.input_names:
             curr_cell = f'{st_col}{st_row}'
             self.ws[curr_cell] = name

@@ -1,3 +1,4 @@
 filepaths.py
 *.xlsx
 __pycache__/
+Raw_Data/

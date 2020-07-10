@@ -6,6 +6,7 @@ import pandas as pd
 from filepaths import *
 import requests
 import win32com.client
+from datetime import date
 
 
 class StoreData()
@@ -15,7 +16,16 @@ class StoreData()
         structures for the program! Accepts the parameters that are to be
         stored.
         """
-        pass
+        self.date_today = date.today()
+        self.d1 = self.date_today.strftime("%d-%m-%Y")
+        self.border = Border(left=Side(border_style='thin', color='000000'),
+                             right=Side(border_style='thin', color='000000'),
+                             top=Side(border_style='thin', color='000000'),
+                             bottom=Side(border_style='thin', color='000000'))
+        self.ft = Font(color='FFFFFF', bold=True, name='Times New Roman')
+        self.allign_style = 'center'
+        self.stored_names, self.input_names, self.cell_range, self.url = [], [], '', ''
+        self.get_url()
 
     def get_url(self):
         """
@@ -42,7 +52,11 @@ class StoreData()
         """
         Stylises cells within a range with the border, allignment etc.
         """
-        pass
+        rows = self.ws[self.cell_range]
+        for row in rows:
+            for cell in row:
+                cell.border = self.border
+                cell.alignment = Alignment(horizontal=self.allign_style, vertical=self.allign_style)
 
     def enter_data(self):
         """
