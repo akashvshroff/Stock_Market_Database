@@ -19,11 +19,11 @@ class InitialiseDb:
         self.url_date = date_today.strftime("%d%m%Y")
         self.base_url = 'https://archives.nseindia.com/products/content/'
         self.input_names = []
-        if not self.share_list:
+        if not share_list:
             self.get_file()
             self.get_info()
         else:
-            self.share_path = r'C:\Users\akush\Desktop\Programming\Projects\Stock_Market_Database\share_list.csv'
+            self.share_path = share_path
             self.stored_shares()
         wb = Workbook()
         self.ws = wb.active
@@ -39,7 +39,8 @@ class InitialiseDb:
         self.store_names()
         self.stylise_cells()
         wb.save(stored_path)
-        os.remove(self.file_path)
+        if not share_list:
+            os.remove(self.file_path)
 
     def get_file(self):
         """
@@ -59,14 +60,14 @@ class InitialiseDb:
         """
         raw_input_df = pd.read_csv(self.file_path, sep=r'\s*,\s*', engine='python')
         input_df = raw_input_df[raw_input_df["SERIES"] == 'EQ']
-        self.input_names = input_df['SYMBOL'].values.tolist()
+        self.input_names = input_df['SYMBOL']
 
     def stored_shares(self):
         """
         Gets the names of shares from a share list.
         """
-        input_df = pd.read_csv(self.share_path)
-        self.input_names = input_df.values.tolist()
+        input_df = pd.read_csv(self.share_path, header=None)
+        self.input_names = input_df[0].values.tolist()
 
     def store_names(self):
         """

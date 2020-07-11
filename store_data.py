@@ -10,7 +10,7 @@ import os
 
 
 class StoreData:
-    def __init__(self, stock_list=None):
+    def __init__(self, stock_list=False):
         """
         Initialises the various dataframes, stylistic variables and data
         structures for the program! Accepts the parameters that are to be
@@ -18,7 +18,6 @@ class StoreData:
         As reports are released for the prev day then the current day is
         considered to be yesterday.
         """
-        self.stock_list = stock_list
         date_today = date.today() - timedelta(days=1)
         self.d1 = date_today.strftime("%d-%m-%Y")
         self.url_date = date_today.strftime("%d%m%Y")
@@ -33,6 +32,11 @@ class StoreData:
         self.start_row = 1
         self.stored_names, self.input_data, self.input_names,  self.url = [], [], [], '',
         self.cells_ref = ['' for i in range(len(self.parameters))]
+        self.share_path = ''
+        self.pre_list = False
+        if stock_list:
+            self.share_path = share_path
+            self.pre_list = True
         self.get_file()
         wb = load_workbook(stored_path)
         self.ws = wb.active
@@ -64,11 +68,12 @@ class StoreData:
         self.input_names = input_df['SYMBOL'].values.tolist()
         self.input_data = input_df[self.parameters]
         self.input_data.reset_index(inplace=True, drop=True)
-        stored_data = pd.read_excel(stored_path)
-        if not self.stock_list:
+        if not self.pre_list:
+            stored_data = pd.read_excel(stored_path)
             self.stored_names = stored_data['STOCKS']
         else:
-            self.stored_names = self.stock_list
+            input_df = pd.read_csv(self.share_path, header=None)
+            self.stored_names = input_df[0].values.tolist()
 
     def date_column(self):
         """
@@ -127,20 +132,14 @@ class StoreData:
         curr_row = self.start_row + 2
         rem_names = self.input_names[::]
         for stock in self.stored_names:
-            # print(curr_row)
-            # print(stock)
             if stock in self.input_names:  # there is data for it
                 stock_index = self.input_names.index(stock)
-                # print(stock_index)
                 for num, parameter in enumerate(self.parameters):
-                    # print(num, parameter)
                     curr_cell = '{}{}'.format(self.cells_ref[num], curr_row)
                     value = self.input_data.at[stock_index, parameter]
                     self.ws[curr_cell] = value
                 rem_names.remove(stock)
                 self.input_data.drop([stock_index], inplace=True)
-                # print(self.input_names)
-                # print(self.input_data.head())
             else:
                 for num, parameter in enumerate(self.parameters):
                     curr_cell = '{}{}'.format(self.cells_ref[num], curr_row)
@@ -149,7 +148,7 @@ class StoreData:
         cell_range = '{}{}:{}{}'.format(
             self.cells_ref[0], self.start_row+1, self.cells_ref[-1], self.start_row+num_stored+1)
         self.stylise_cells(cell_range)
-        if not self.stock_list:
+        if not self.pre_list:
             if rem_names:
                 # now it is only the cells that haven't been added before
                 start_row = 2 + num_stored
@@ -169,7 +168,7 @@ class StoreData:
 
 
 def main():
-    obj = StoreData()
+    obj = StoreData(True)
 
 
 if __name__ == '__main__':
