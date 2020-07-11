@@ -5,13 +5,12 @@ from openpyxl.utils import get_column_letter
 import pandas as pd
 from filepaths import *
 import requests
-import win32com.client
 from datetime import date, timedelta
 import os
 
 
 class StoreData:
-    def __init__(self):
+    def __init__(self, stock_list=None):
         """
         Initialises the various dataframes, stylistic variables and data
         structures for the program! Accepts the parameters that are to be
@@ -19,6 +18,7 @@ class StoreData:
         As reports are released for the prev day then the current day is
         considered to be yesterday.
         """
+        self.stock_list = stock_list
         date_today = date.today() - timedelta(days=1)
         self.d1 = date_today.strftime("%d-%m-%Y")
         self.url_date = date_today.strftime("%d%m%Y")
@@ -65,7 +65,10 @@ class StoreData:
         self.input_data = input_df[self.parameters]
         self.input_data.reset_index(inplace=True, drop=True)
         stored_data = pd.read_excel(stored_path)
-        self.stored_names = stored_data['STOCKS']
+        if not self.stock_list:
+            self.stored_names = stored_data['STOCKS']
+        else:
+            self.stored_names = self.stock_list
 
     def date_column(self):
         """
@@ -121,7 +124,6 @@ class StoreData:
         on the first column.
         """
         num_stored = len(self.stored_names)
-        num_added = len(set(self.input_names+self.stored_names))
         curr_row = self.start_row + 2
         rem_names = self.input_names[::]
         for stock in self.stored_names:
@@ -147,32 +149,26 @@ class StoreData:
         cell_range = '{}{}:{}{}'.format(
             self.cells_ref[0], self.start_row+1, self.cells_ref[-1], self.start_row+num_stored+1)
         self.stylise_cells(cell_range)
-
-        if rem_names:
-            # now it is only the cells that haven't been added before
-            start_row = 3 + num_stored
-            curr_row = start_row
-            for name in rem_names:
-                curr_cell = f'A{curr_row}'
-                self.ws[curr_cell] = name
-                stock_index = rem_names.index(name)
-                for num, parameter in enumerate(self.parameters):
-                    curr_cell = '{}{}'.format(self.cells_ref[i], curr_row)
-                    value = self.input_data.at[stock_index, parameter]
-                    self.ws[curr_cell] = value
-                curr_row += 1
-            cell_range = f'A{1}:A{curr_row}'
+        if not self.stock_list:
+            if rem_names:
+                # now it is only the cells that haven't been added before
+                start_row = 3 + num_stored
+                curr_row = start_row
+                for name in rem_names:
+                    curr_cell = f'A{curr_row}'
+                    self.ws[curr_cell] = name
+                    stock_index = self.input_names.index(name)
+                    for num, parameter in enumerate(self.parameters):
+                        curr_cell = '{}{}'.format(self.cells_ref[num], curr_row)
+                        value = self.input_data.at[stock_index, parameter]
+                        self.ws[curr_cell] = value
+                    curr_row += 1
+            cell_range = [f'A{1}:A{curr_row}', f'B{2}:{cells_ref[-1]}{curr_row}'
             self.stylise_cells(cell_range)
-
-    def arrange_rows(self):
-        """
-        Sorts all the names within the different rows.
-        """
-        pass
 
 
 def main():
-    obj = StoreData()
+    obj= StoreData()
 
 
 if __name__ == '__main__':
