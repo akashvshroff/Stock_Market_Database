@@ -144,7 +144,7 @@ class StoreData:
             else:
                 for num, parameter in enumerate(self.parameters):
                     curr_cell = '{}{}'.format(self.cells_ref[num], curr_row)
-                    self.ws[curr_cell] = '-'
+                    self.ws[curr_cell] = ''
             curr_row += 1
         cell_range = '{}{}:{}{}'.format(
             self.cells_ref[0], self.start_row+1, self.cells_ref[-1], self.start_row+num_stored+1)
@@ -152,7 +152,7 @@ class StoreData:
         if not self.stock_list:
             if rem_names:
                 # now it is only the cells that haven't been added before
-                start_row = 3 + num_stored
+                start_row = 2 + num_stored
                 curr_row = start_row
                 for name in rem_names:
                     curr_cell = f'A{curr_row}'
@@ -163,12 +163,13 @@ class StoreData:
                         value = self.input_data.at[stock_index, parameter]
                         self.ws[curr_cell] = value
                     curr_row += 1
-            cell_range = [f'A{1}:A{curr_row}', f'B{2}:{cells_ref[-1]}{curr_row}'
-            self.stylise_cells(cell_range)
+            cell_ranges = [f'A{1}:A{curr_row-1}', f'B{2}:{self.cells_ref[-1]}{curr_row-1}']
+            for cell_range in cell_ranges:
+                self.stylise_cells(cell_range)
 
 
 def main():
-    obj= StoreData()
+    obj = StoreData()
 
 
 if __name__ == '__main__':
