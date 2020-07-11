@@ -5,8 +5,9 @@ from openpyxl.utils import get_column_letter
 import pandas as pd
 from filepaths import *
 import requests
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import os
+import sys
 
 
 class StoreData:
@@ -20,6 +21,9 @@ class StoreData:
         """
         date_today = date.today() - timedelta(days=1)
         self.d1 = date_today.strftime("%d-%m-%Y")
+        if datetime.today().weekday() in [6, 0]:
+            print('No reports available for Saturday or Sunday.')
+            sys.exit()
         self.url_date = date_today.strftime("%d%m%Y")
         self.base_url = 'https://archives.nseindia.com/products/content/'
         self.border = Border(left=Side(border_style='thin', color='000000'),
@@ -52,6 +56,9 @@ class StoreData:
         self.url = self.base_url + 'sec_bhavdata_full_{}.csv'.format(self.url_date)
         # print(self.url)
         values = requests.get(self.url)
+        if values.status_code == 404:
+            print("No report available. Try tomorrow. Exiting.")
+            sys.exit()
         self.file_path = 'sec_bhavdata_full_{}.csv'.format(self.url_date)
         fhand = open(self.file_path, 'wb')
         fhand.write(values.content)
