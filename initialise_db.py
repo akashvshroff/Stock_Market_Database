@@ -10,7 +10,7 @@ import requests
 
 
 class InitialiseDb:
-    def __init__(self):
+    def __init__(self, share_list=False):
         """
         Gets the names of the input stocks, initialise formatting and other
         structures.
@@ -19,8 +19,12 @@ class InitialiseDb:
         self.url_date = date_today.strftime("%d%m%Y")
         self.base_url = 'https://archives.nseindia.com/products/content/'
         self.input_names = []
-        self.get_file()
-        self.get_info()
+        if not self.share_list:
+            self.get_file()
+            self.get_info()
+        else:
+            self.share_path = r'C:\Users\akush\Desktop\Programming\Projects\Stock_Market_Database\share_list.csv'
+            self.stored_shares()
         wb = Workbook()
         self.ws = wb.active
         self.border = Border(left=Side(border_style='thin', color='000000'),
@@ -55,7 +59,14 @@ class InitialiseDb:
         """
         raw_input_df = pd.read_csv(self.file_path, sep=r'\s*,\s*', engine='python')
         input_df = raw_input_df[raw_input_df["SERIES"] == 'EQ']
-        self.input_names = input_df['SYMBOL']
+        self.input_names = input_df['SYMBOL'].values.tolist()
+
+    def stored_shares(self):
+        """
+        Gets the names of shares from a share list.
+        """
+        input_df = pd.read_csv(self.share_path)
+        self.input_names = input_df.values.tolist()
 
     def store_names(self):
         """
@@ -80,7 +91,7 @@ class InitialiseDb:
 
 
 def main():
-    obj = InitialiseDb()
+    obj = InitialiseDb(True)
 
 
 if __name__ == '__main__':

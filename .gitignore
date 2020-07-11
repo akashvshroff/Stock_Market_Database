@@ -2,3 +2,4 @@ filepaths.py
 *.xlsx
 __pycache__/
 Raw_Data/
+share_list.csv
