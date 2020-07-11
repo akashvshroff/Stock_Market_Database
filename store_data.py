@@ -143,7 +143,7 @@ class StoreData:
             else:
                 for num, parameter in enumerate(self.parameters):
                     curr_cell = '{}{}'.format(self.cells_ref[num], curr_row)
-                    self.ws[curr_cell] = ''
+                    self.ws[curr_cell] = '-'
             curr_row += 1
         cell_range = '{}{}:{}{}'.format(
             self.cells_ref[0], self.start_row+1, self.cells_ref[-1], self.start_row+num_stored+1)
