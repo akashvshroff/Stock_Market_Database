@@ -130,7 +130,7 @@ class StoreData:
         """
         num_stored = len(self.stored_names)
         curr_row = self.start_row + 2
-        rem_names = self.input_names[::]
+        rem_names = self.input_names[::]  # to remove names
         for stock in self.stored_names:
             if stock in self.input_names:  # there is data for it
                 stock_index = self.input_names.index(stock)
@@ -140,7 +140,7 @@ class StoreData:
                     self.ws[curr_cell] = value
                 rem_names.remove(stock)
                 self.input_data.drop([stock_index], inplace=True)
-            else:
+            else:  # missing from retrieved list.
                 for num, parameter in enumerate(self.parameters):
                     curr_cell = '{}{}'.format(self.cells_ref[num], curr_row)
                     self.ws[curr_cell] = '-'
@@ -148,7 +148,7 @@ class StoreData:
         cell_range = '{}{}:{}{}'.format(
             self.cells_ref[0], self.start_row+1, self.cells_ref[-1], self.start_row+num_stored+1)
         self.stylise_cells(cell_range)
-        if not self.pre_list:
+        if not self.pre_list:  # dealing with all the shares
             if rem_names:
                 # now it is only the cells that haven't been added before
                 start_row = 2 + num_stored
