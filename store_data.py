@@ -11,7 +11,7 @@ import sys
 
 
 class StoreData:
-    def __init__(self, stock_list=False, n=1):
+    def __init__(self, base_url, ext_url, s_p, stored_file, stock_list=False, n=1):
         """
         Initialises the various dataframes, stylistic variables and data
         structures for the program! Accepts the parameters that are to be
@@ -19,6 +19,7 @@ class StoreData:
         As reports are released for the prev day then the current day is
         considered to be yesterday.
         """
+        self.stored_path = stored_file
         flag = False
         date_today = date.today() - timedelta(days=n)
         self.d1 = date_today.strftime("%d-%m-%Y")
@@ -27,7 +28,8 @@ class StoreData:
             flag = True
         if not flag:
             self.url_date = date_today.strftime("%d%m%Y")
-            self.base_url = 'https://archives.nseindia.com/products/content/'
+            self.base_url = base_url
+            self.ext_url = ext_url
             self.border = Border(left=Side(border_style='thin', color='000000'),
                                  right=Side(border_style='thin', color='000000'),
                                  top=Side(border_style='thin', color='000000'),
@@ -41,15 +43,15 @@ class StoreData:
             self.share_path = ''
             self.pre_list = False
             if stock_list:
-                self.share_path = share_path
+                self.share_path = s_p
                 self.pre_list = True
             flag = self.get_file()
             if not flag:  # check if report exists
-                wb = load_workbook(stored_path)
+                wb = load_workbook(self.stored_path)
                 self.ws = wb.active
                 self.date_column()
                 self.enter_data()
-                wb.save(stored_path)
+                wb.save(self.stored_path)
                 os.remove(self.file_path)
                 print("Report generated for {}".format(self.d1))
 
@@ -57,7 +59,7 @@ class StoreData:
         """
         Retrieves the url for the file that is to be scraped.
         """
-        self.url = self.base_url + 'sec_bhavdata_full_{}.csv'.format(self.url_date)
+        self.url = self.base_url + self.ext_url + '{}.csv'.format(self.url_date)
         # print(self.url)
         values = requests.get(self.url)
         if values.status_code == 404:
@@ -80,7 +82,7 @@ class StoreData:
         self.input_data = input_df[self.parameters]
         self.input_data.reset_index(inplace=True, drop=True)
         if not self.pre_list:
-            stored_data = pd.read_excel(stored_path)
+            stored_data = pd.read_excel(self.stored_path)
             self.stored_names = stored_data['STOCKS']
         else:
             input_df = pd.read_csv(self.share_path, header=None)
@@ -179,7 +181,12 @@ class StoreData:
 
 
 def main():
-    StoreData(True, 1)
+    base_url = 'https://archives.nseindia.com/products/content/'
+    ext_url = 'sec_bhavdata_full_'
+    s_p = share_path_1
+    n = 3
+    stored_file = stored_path_1
+    StoreData(base_url, ext_url, s_p, stored_file, True, n)
 
 
 if __name__ == '__main__':

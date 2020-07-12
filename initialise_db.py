@@ -10,20 +10,20 @@ import requests
 
 
 class InitialiseDb:
-    def __init__(self, share_list=False):
+    def __init__(self, share_list=False, base_url='', s_p=''):
         """
         Gets the names of the input stocks, initialise formatting and other
         structures.
         """
         date_today = date.today() - timedelta(days=1)
         self.url_date = date_today.strftime("%d%m%Y")
-        self.base_url = 'https://archives.nseindia.com/products/content/'
+        self.base_url = base_url
         self.input_names = []
         if not share_list:
             self.get_file()
             self.get_info()
         else:
-            self.share_path = share_path
+            self.share_path = s_p
             self.stored_shares()
         wb = Workbook()
         self.ws = wb.active
@@ -47,7 +47,6 @@ class InitialiseDb:
         Gets the url for the csv file.
         """
         self.url = self.base_url + 'sec_bhavdata_full_{}.csv'.format(self.url_date)
-        # print(self.url)
         values = requests.get(self.url)
         self.file_path = 'sec_bhavdata_full_{}.csv'.format(self.url_date)
         fhand = open(self.file_path, 'wb')
@@ -92,7 +91,9 @@ class InitialiseDb:
 
 
 def main():
-    obj = InitialiseDb(True)
+    base_url = 'https://archives.nseindia.com/products/content/'
+    s_p = share_path_1
+    obj = InitialiseDb(True, base_url, s_p)
 
 
 if __name__ == '__main__':
