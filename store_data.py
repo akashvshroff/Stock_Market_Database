@@ -184,9 +184,10 @@ def main():
         base_url = data['base_url'][i]
         ext_url = data['ext_url'][i]
         s_p = data['share_path'][i]
-        n = 1
+        n = date.today().weekday()
         stored_file = data['stored_path'][i]
-        StoreData(base_url, ext_url, s_p, stored_file, True, n)
+        for k in range(n, 0, -1):
+            StoreData(base_url, ext_url, s_p, stored_file, True, k)
 
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ import requests
 
 
 class InitialiseDb:
-    def __init__(self, share_list=False, base_url='', s_p=''):
+    def __init__(self, share_list=False, base_url='', s_p='', stored_path=''):
         """
         Gets the names of the input stocks, initialise formatting and other
         structures.
@@ -92,9 +92,10 @@ class InitialiseDb:
 
 def main():
     for i in range(1):
-        base_url = data['base_url']
+        base_url = data['base_url'][i]
         s_p = data['share_path'][i]
-        obj = InitialiseDb(True, base_url, s_p)
+        stored_path = data['stored_path'][i]
+        obj = InitialiseDb(True, base_url, s_p, stored_path)
 
 
 if __name__ == '__main__':
