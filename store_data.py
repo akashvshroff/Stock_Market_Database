@@ -10,7 +10,7 @@ import os
 
 
 class StoreData:
-    def __init__(self, base_url, ext_url, s_p, stored_file, stock_list=False, n=1):
+    def __init__(self, base_url, ext_url, s_p, stored_file, stock_list=False, n=1, parameter=[]):
         """
         Initialises the various dataframes, stylistic variables and data
         structures for the program! Accepts the parameters that are to be
@@ -35,7 +35,7 @@ class StoreData:
                                  bottom=Side(border_style='thin', color='000000'))
             self.ft = Font(color='FFFFFF', bold=True, name='Times New Roman')
             self.allign_style = 'center'
-            self.parameters = ['DELIV_PER']
+            self.parameters = parameter
             self.start_row = 1
             self.stored_names, self.input_data, self.input_names,  self.url = [], [], [], '',
             self.cells_ref = ['' for i in range(len(self.parameters))]
@@ -186,8 +186,9 @@ def main():
         s_p = data['share_path'][i]
         n = date.today().weekday()
         stored_file = data['stored_path'][i]
+        parameter = data['parameter'][i]
         for k in range(n, 0, -1):
-            StoreData(base_url, ext_url, s_p, stored_file, True, k)
+            StoreData(base_url, ext_url, s_p, stored_file, True, k, parameter)
 
 
 if __name__ == '__main__':
