@@ -11,7 +11,7 @@ import sys
 
 
 class StoreData:
-    def __init__(self, stock_list=False):
+    def __init__(self, stock_list=False, n=1):
         """
         Initialises the various dataframes, stylistic variables and data
         structures for the program! Accepts the parameters that are to be
@@ -19,35 +19,39 @@ class StoreData:
         As reports are released for the prev day then the current day is
         considered to be yesterday.
         """
-        date_today = date.today() - timedelta(days=1)
+        flag = False
+        date_today = date.today() - timedelta(days=n)
         self.d1 = date_today.strftime("%d-%m-%Y")
-        if datetime.today().weekday() in [6, 0]:
+        if date_today.weekday() in [5, 6]:
             print('No reports available for Saturday or Sunday.')
-            sys.exit()
-        self.url_date = date_today.strftime("%d%m%Y")
-        self.base_url = 'https://archives.nseindia.com/products/content/'
-        self.border = Border(left=Side(border_style='thin', color='000000'),
-                             right=Side(border_style='thin', color='000000'),
-                             top=Side(border_style='thin', color='000000'),
-                             bottom=Side(border_style='thin', color='000000'))
-        self.ft = Font(color='FFFFFF', bold=True, name='Times New Roman')
-        self.allign_style = 'center'
-        self.parameters = ['DELIV_PER']
-        self.start_row = 1
-        self.stored_names, self.input_data, self.input_names,  self.url = [], [], [], '',
-        self.cells_ref = ['' for i in range(len(self.parameters))]
-        self.share_path = ''
-        self.pre_list = False
-        if stock_list:
-            self.share_path = share_path
-            self.pre_list = True
-        self.get_file()
-        wb = load_workbook(stored_path)
-        self.ws = wb.active
-        self.date_column()
-        self.enter_data()
-        wb.save(stored_path)
-        os.remove(self.file_path)
+            flag = True
+        if not flag:
+            self.url_date = date_today.strftime("%d%m%Y")
+            self.base_url = 'https://archives.nseindia.com/products/content/'
+            self.border = Border(left=Side(border_style='thin', color='000000'),
+                                 right=Side(border_style='thin', color='000000'),
+                                 top=Side(border_style='thin', color='000000'),
+                                 bottom=Side(border_style='thin', color='000000'))
+            self.ft = Font(color='FFFFFF', bold=True, name='Times New Roman')
+            self.allign_style = 'center'
+            self.parameters = ['DELIV_PER']
+            self.start_row = 1
+            self.stored_names, self.input_data, self.input_names,  self.url = [], [], [], '',
+            self.cells_ref = ['' for i in range(len(self.parameters))]
+            self.share_path = ''
+            self.pre_list = False
+            if stock_list:
+                self.share_path = share_path
+                self.pre_list = True
+            flag = self.get_file()
+            if not flag:  # check if report exists
+                wb = load_workbook(stored_path)
+                self.ws = wb.active
+                self.date_column()
+                self.enter_data()
+                wb.save(stored_path)
+                os.remove(self.file_path)
+                print("Report generated for {}".format(self.d1))
 
     def get_file(self):
         """
@@ -58,7 +62,7 @@ class StoreData:
         values = requests.get(self.url)
         if values.status_code == 404:
             print("No report available. Try tomorrow. Exiting.")
-            sys.exit()
+            return True
         self.file_path = 'sec_bhavdata_full_{}.csv'.format(self.url_date)
         fhand = open(self.file_path, 'wb')
         fhand.write(values.content)
@@ -175,7 +179,7 @@ class StoreData:
 
 
 def main():
-    obj = StoreData(True)
+    StoreData(True, 1)
 
 
 if __name__ == '__main__':
