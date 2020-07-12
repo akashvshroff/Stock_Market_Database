@@ -5,10 +5,10 @@
     ```python
     data = {
         'stored_path': [
-           #excel sheet(s) that are logged to.
+            #excel sheet(s) that are logged to.
         ],
         'share_path': [
-    	     #path(s) of a file (csv) with the names of shares that are to be tracked.
+    	    #path(s) of a file (csv) with the names of shares that are to be tracked.
         ],
         'base_url': [
             #url(s) that is to be scraped.
@@ -16,9 +16,9 @@
         'ext_url': [
             #the variable extension(s) for the said url(s).
         ]
-    		'parameters' : [
-    			  #the parameters for the scraping for the different sites.
-    		]
+        'parameters' : [
+            #the parameters for the scraping for the different sites.
+        ]
     }
     ```
 
@@ -44,7 +44,7 @@
 - Next, store_data:
     - The purpose of store data is simple - it is meant to scrape a url for data for shares, see which shares, in the excel sheet already stored, match and fill in the corresponding cells with data for the parameters as decided by the user giving a result like this:
 
-        ![alt text]()
+        ![alt text](https://github.com/akashvshroff/Stock_Market_Database/blob/master/Sample_Output/Output.png)
 
     - It determines the corresponding cells by querying the heading row and matching the dates stored to the date that it has just scraped and thereby determining the position of the column.
     - If a share does not have data present, it simply logs a '-' and if there are new cells present, it appends them to the bottom of the column and then adds the data for the share.
