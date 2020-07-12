@@ -91,9 +91,10 @@ class InitialiseDb:
 
 
 def main():
-    base_url = 'https://archives.nseindia.com/products/content/'
-    s_p = share_path_1
-    obj = InitialiseDb(True, base_url, s_p)
+    for i in range(1):
+        base_url = data['base_url']
+        s_p = data['share_path'][i]
+        obj = InitialiseDb(True, base_url, s_p)
 
 
 if __name__ == '__main__':

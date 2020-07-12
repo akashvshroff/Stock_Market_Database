@@ -7,7 +7,6 @@ from filepaths import *
 import requests
 from datetime import date, timedelta, datetime
 import os
-import sys
 
 
 class StoreData:
@@ -181,12 +180,13 @@ class StoreData:
 
 
 def main():
-    base_url = 'https://archives.nseindia.com/products/content/'
-    ext_url = 'sec_bhavdata_full_'
-    s_p = share_path_1
-    n = 3
-    stored_file = stored_path_1
-    StoreData(base_url, ext_url, s_p, stored_file, True, n)
+    for i in range(1):
+        base_url = data['base_url'][i]
+        ext_url = data['ext_url'][i]
+        s_p = data['share_path'][i]
+        n = 1
+        stored_file = data['stored_path'][i]
+        StoreData(base_url, ext_url, s_p, stored_file, True, n)
 
 
 if __name__ == '__main__':
