@@ -29,3 +29,8 @@
 # Outline:
 
 - A simplistic scraper that cleans up data regarding share prices for a list of pre-defined shares or all shares based on daily NSE reports. It can find data for multiple parameters based on the users preference and stores the data neatly in an excel sheet, presenting date and the data for the parameters. It is soon going to be updated to include rudimentary analysis and visualisation as well.
+
+# Purpose:
+
+- This project helped me solidify my understanding of pandas and working with csv files as well as MultiIndexed dataframes. While the build seems relatively easy at first glance - accounting for the various parameters that the users could choose, a preset share list versus all the shares (that change everyday) as well as having to deal with the fact that the reports are not available on certain days made it so that to write clean code efficiently, I had to plan the program thoroughly and document it well.
+- With reusability in mind, I therefore implemented the filepaths program that would allow me to build multiple excel sheets on the same principle simultaneously.
