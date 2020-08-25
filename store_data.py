@@ -7,6 +7,8 @@ from filepaths import *
 import requests
 from datetime import date, timedelta, datetime
 import os
+import zipfile
+import io
 
 
 class StoreData:
@@ -22,6 +24,9 @@ class StoreData:
         flag = False
         date_today = date.today() - timedelta(days=n)
         self.d1 = date_today.strftime("%d-%m-%Y")
+        self.year = date_today.strftime("%Y")
+        self.month = date_today.strftime("%b").upper()
+        self.date_url = date_today.strftime("%d%b%Y").upper()
         if date_today.weekday() in [5, 6]:
             print('No reports available for Saturday or Sunday.')
             flag = True
@@ -51,23 +56,18 @@ class StoreData:
                 self.date_column()
                 self.enter_data()
                 wb.save(self.stored_path)
-                os.remove(self.file_path)
                 print("Report generated for {}".format(self.d1))
 
     def get_file(self):
         """
         Retrieves the url for the file that is to be scraped.
         """
-        self.url = self.base_url + self.ext_url + '{}.csv'.format(self.url_date)
-        # print(self.url)
+        self.url = f'{self.base_url}{self.year}/{self.month}/cm{self.date_url}{self.ext_url}'
+        print(self.url)
         values = requests.get(self.url)
         if values.status_code == 404:
             print("No report available. Try tomorrow. Exiting.")
             return True
-        self.file_path = 'sec_bhavdata_full_{}.csv'.format(self.url_date)
-        fhand = open(self.file_path, 'wb')
-        fhand.write(values.content)
-        fhand.close()
         self.retrieve_data()
 
     def retrieve_data(self):
@@ -75,7 +75,7 @@ class StoreData:
         Scrapes the data retrieved, adds it to the data frames and parses the
         data.
         """
-        raw_input_df = pd.read_csv(self.file_path, sep=r'\s*,\s*', engine='python')
+        raw_input_df = pd.read_csv(self.url, sep=r'\s*,\s*', engine='python')
         input_df = raw_input_df[raw_input_df["SERIES"] == 'EQ']
         self.input_names = input_df['SYMBOL'].values.tolist()
         self.input_data = input_df[self.parameters]
@@ -186,7 +186,7 @@ def main():
         s_p = data['share_path'][i]
         n = date.today().weekday()
         stored_file = data['stored_path'][i]
-        parameter = data['parameter'][i]
+        parameter = data['parameters'][i]
         for k in range(n, 0, -1):
             StoreData(base_url, ext_url, s_p, stored_file, True, k, parameter)
 
